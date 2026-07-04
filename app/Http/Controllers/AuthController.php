@@ -104,11 +104,11 @@ class AuthController extends Controller
             'status'  => 'success',
             'message' => 'PIN je uspešno postavljen.',
             'token'   => $token,
-            'user'    => [
-                'id'         => $user->id,
-                'first_name' => $user->first_name,
-                'last_name'  => $user->last_name,
-            ]
+            // 'user'    => [
+            //     'id'         => $user->id,
+            //     'first_name' => $user->first_name,
+            //     'last_name'  => $user->last_name,
+            // ]
         ], 200);
     }
 
@@ -152,11 +152,11 @@ class AuthController extends Controller
             'status'  => 'success',
             'message' => 'Uspešna prijava.',
             'token'   => $token,
-            'user'    => [
-                'id'         => $user->id,
-                'first_name' => $user->first_name,
-                'last_name'  => $user->last_name,
-            ]
+            // 'user'    => [
+            //     'id'         => $user->id,
+            //     'first_name' => $user->first_name,
+            //     'last_name'  => $user->last_name,
+            // ]
         ], 200);
     }
 
