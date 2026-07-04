@@ -14,3 +14,4 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function (): void {
 });
 
 Route::post('/activate', [AuthController::class, 'activate']);
+Route::post('/set_pin', [AuthController::class, 'setupPin']);

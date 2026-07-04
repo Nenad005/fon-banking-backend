@@ -37,17 +37,11 @@ class User extends Authenticatable
         return $this->hasMany(Device::class);
     }
 
-    /**
-     * Korisnik može imati više bankovnih računa.
-     */
     public function accounts()
     {
         return $this->hasMany(Account::class);
     }
 
-    /**
-     * Korisnik može imati više šablona za plaćanje (opciono).
-     */
     public function paymentTemplates()
     {
         return $this->hasMany(PaymentTemplate::class);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivationCode;
+use App\Models\Device;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -12,6 +13,8 @@ class AuthController extends Controller
     {
         $request->validate([
             'code' => 'required|string',
+            'device_identifier' => 'required|string|min:14',
+            'device_name' => 'required|string'
         ]);
 
         $submittedCode = trim($request->input('code'));
@@ -39,14 +42,73 @@ class AuthController extends Controller
 
         $user = $matchedCode->user;
 
-        // TODO: Treba promeniti status user-a i registrovati ili izmeniti uredjaj
+        $matchedCode->used_at = now();
+        $matchedCode->save();
+
+        $device = Device::updateOrCreate(
+            ['device_identifier' => $request->device_identifier],
+            [
+                'user_id'       => $user->id,
+                'device_name'   => $request->device_name ?? 'Nepoznat uređaj',
+                'device_identifier' => $request->device_identifier,
+                'is_trusted'    => true,
+                'last_login_at' => now(),
+            ]
+        );
+
+        if (is_null($user->pin_hash)) {
+            $user->status = 'pending_pin';
+            $user->save();
+        }
+
         return response()->json([
-            'message' => 'Kod je uspešno verifikovan.',
-            'user_id' => $user->id,
+            'message' => 'Kod je uspešno verifikovan. Uredjaj registrovan',
+            // 'user_id' => $user->id,
+            'user_status' => $user->status,
         ]);
     }
 
-    public function setup_pin(Request $request) {
+    public function setupPin(Request $request)
+    {
+        $request->validate([
+            'device_identifier' => 'required|string',
+            'pin'       => 'required|digits:4', 
+        ]);
 
-    } 
+        $device = Device::where('device_identifier', $request->device_identifier)->first();
+
+        if (!$device || !$device->is_trusted) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Uređaj nije pronađen ili je blokiran.'
+            ], 403);
+        }
+
+        $user = $device->user;
+
+        if (!is_null($user->pin_hash)) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'PIN je već postavljen za ovaj nalog.'
+            ], 400);
+        }
+
+        $user->update([
+            'pin_hash' => Hash::make($request->pin),
+            'status' => 'active'
+        ]);
+
+        $token = $user->createToken($device->device_identifier)->plainTextToken;
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'PIN je uspešno postavljen.',
+            'token'   => $token,
+            'user'    => [
+                'id'         => $user->id,
+                'first_name' => $user->first_name,
+                'last_name'  => $user->last_name,
+            ]
+        ], 200);
+    }
 }
