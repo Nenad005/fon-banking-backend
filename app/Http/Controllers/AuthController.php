@@ -111,4 +111,62 @@ class AuthController extends Controller
             ]
         ], 200);
     }
+
+    public function login(Request $request)
+    {
+        $request->validate([
+            'device_identifier' => 'required|string',
+            'pin'       => 'required|digits:4', 
+        ]);
+
+        $device = Device::where('device_identifier', $request->device_identifier)->first();
+
+        if (!$device || !$device->is_trusted) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Uređaj nije pronađen ili nije autorizovan.'
+            ], 403);
+        }
+
+        $user = $device->user;
+
+        if (is_null($user->pin_hash)) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'PIN nije postavljen. Molimo vas da prvo završite aktivaciju naloga.'
+            ], 400);
+        }
+
+        if (!Hash::check($request->pin, $user->pin_hash)) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Pogrešan PIN kod.'
+            ], 401);
+        }
+
+        $device->update(['last_login_at' => now()]);
+
+        $token = $user->createToken($device->device_identifier)->plainTextToken;
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Uspešna prijava.',
+            'token'   => $token,
+            'user'    => [
+                'id'         => $user->id,
+                'first_name' => $user->first_name,
+                'last_name'  => $user->last_name,
+            ]
+        ], 200);
+    }
+
+    public function logout(Request $request)
+    {   
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Uspešno ste izlogovani.'
+        ], 200);
+    }
 }
