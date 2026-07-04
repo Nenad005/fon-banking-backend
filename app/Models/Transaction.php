@@ -3,36 +3,41 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Transaction extends Model
 {
     protected $fillable = [
-        'id',
         'transaction_type',
-        'recipient_account',
+        'recipient_account_id',
         'recipient_name',
-        'sender_account',
-        'sender_name',
+        'sender_account_id',
         'model',
-        'reference_number',
+        'reference',
         'amount',
         'currency',
         'payment_purpose',
         'payment_code',
         'transaction_time',
         'status',
-        'card_number',
+        'card_id',
     ];
-
-    public $incrementing = false;
-    protected $keyType = 'string';
 
     protected function casts(): array
     {
         return [
             'amount' => 'float',
             'transaction_time' => 'datetime',
-            'model' => 'integer',
         ];
+    }
+
+    public function sender() : HasOne
+    {
+        return $this->hasOne(Account::class, 'sender_account_id', 'id');
+    }
+
+    public function recipient() : HasOne
+    {
+        return $this->hasOne(Account::class, 'recipient_account_id', 'id');
     }
 }

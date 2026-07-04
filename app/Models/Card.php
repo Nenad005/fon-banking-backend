@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Card extends Model
 {
     protected $fillable = [
-        'id',
         'account_id',
         'card_id',
         'card_type',
@@ -18,8 +17,7 @@ class Card extends Model
         'cvv',
     ];
 
-    public $incrementing = false;
-    protected $keyType = 'string';
+    public $incrementing = true;
 
     public function account(): BelongsTo
     {

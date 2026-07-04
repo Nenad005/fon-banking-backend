@@ -9,18 +9,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Account extends Model
 {
     protected $fillable = [
-        'id',
+        'account_id',
         'user_id',
         'title',
         'name',
-        'account_id',
         'balance',
         'color',
         'currency',
     ];
 
-    public $incrementing = false;
-    protected $keyType = 'string';
+    public $incrementing = true;
 
     protected function casts(): array
     {
