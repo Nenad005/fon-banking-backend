@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('color');
             $table->string('currency', 3);
             $table->timestamps();
+
+            $table->index('user_id');
         });
     }
 

@@ -18,7 +18,9 @@ class Account extends Model
         'currency',
     ];
 
-    public $incrementing = true;
+    public $incrementing = false;
+
+    protected $keyType = 'string';
 
     protected function casts(): array
     {
@@ -37,8 +39,13 @@ class Account extends Model
         return $this->hasMany(Card::class, 'account_id', 'id');
     }
 
-    public function transactions(): HasMany
+    public function outgoingTransactions(): HasMany
     {
         return $this->hasMany(Transaction::class, 'sender_account', 'account_id');
+    }
+
+    public function incomingTransactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class, 'recipient_account', 'account_id');
     }
 }

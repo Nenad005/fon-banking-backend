@@ -3,25 +3,28 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
     protected $fillable = [
-        'transaction_type',
-        'recipient_account_id',
+        'recipient_account',
         'recipient_name',
-        'sender_account_id',
+        'sender_account',
         'model',
-        'reference',
+        'reference_number',
         'amount',
         'currency',
         'payment_purpose',
         'payment_code',
         'transaction_time',
         'status',
-        'card_id',
+        'card_number',
     ];
+
+    public $incrementing = false;
+
+    protected $keyType = 'string';
 
     protected function casts(): array
     {
@@ -31,13 +34,18 @@ class Transaction extends Model
         ];
     }
 
-    public function sender() : HasOne
+    public function sender(): BelongsTo
     {
-        return $this->hasOne(Account::class, 'sender_account_id', 'id');
+        return $this->belongsTo(Account::class, 'sender_account', 'account_id');
     }
 
-    public function recipient() : HasOne
+    public function recipient(): BelongsTo
     {
-        return $this->hasOne(Account::class, 'recipient_account_id', 'id');
+        return $this->belongsTo(Account::class, 'recipient_account', 'account_id');
+    }
+
+    public function card(): BelongsTo
+    {
+        return $this->belongsTo(Card::class, 'card_number', 'card_id');
     }
 }

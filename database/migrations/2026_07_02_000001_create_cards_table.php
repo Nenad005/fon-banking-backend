@@ -20,6 +20,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('account_id')->references('id')->on('accounts')->cascadeOnDelete();
+            $table->index('account_id');
         });
     }
 
