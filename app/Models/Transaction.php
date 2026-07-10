@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Transaction extends Model
 {
     protected $fillable = [
+        'id',
         'recipient_account',
         'recipient_name',
         'sender_account',
@@ -15,6 +16,11 @@ class Transaction extends Model
         'reference_number',
         'amount',
         'currency',
+        'sender_amount',
+        'sender_currency',
+        'recipient_amount',
+        'recipient_currency',
+        'exchange_rate',
         'payment_purpose',
         'payment_code',
         'transaction_time',
@@ -30,6 +36,9 @@ class Transaction extends Model
     {
         return [
             'amount' => 'float',
+            'sender_amount' => 'float',
+            'recipient_amount' => 'float',
+            'exchange_rate' => 'float',
             'transaction_time' => 'datetime',
         ];
     }

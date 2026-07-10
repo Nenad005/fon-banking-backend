@@ -32,26 +32,36 @@ class TransactionController extends Controller
             ->where('user_id', $userId)
             ->firstOrFail();
 
-        if ($account->balance < $validated['amount']) {
+        $recipientAccount = Account::query()
+            ->where('account_id', $validated['recipientAccount'])
+            ->firstOrFail();
+
+        $recipientCurrency = $recipientAccount->currency;
+        $senderCurrency = $account->currency;
+        $recipientAmount = (float) $validated['amount'];
+        $senderAmount = Account::convertAmount($recipientAmount, $recipientCurrency, $senderCurrency);
+        $exchangeRate = Account::exchangeRateBetween($senderCurrency, $recipientCurrency);
+
+        if ($account->balance < $senderAmount) {
             return response()->json([
                 'message' => 'Insufficient funds.',
             ], 422);
         }
 
-        $account->balance -= (float) $validated['amount'];
-        $account->save();
-
         $transaction = Transaction::create([
             'id' => 'txn-'.Str::upper(Str::random(4)),
-            'transaction_type' => 'odliv',
             'recipient_account' => $validated['recipientAccount'],
             'recipient_name' => $validated['recipientName'],
             'sender_account' => $validated['senderAccount'],
-            'sender_name' => $account->name,
             'model' => $validated['model'] ?? null,
             'reference_number' => $validated['referenceNumber'] ?? null,
-            'amount' => (float) $validated['amount'],
-            'currency' => $validated['currency'],
+            'amount' => $recipientAmount,
+            'currency' => $recipientCurrency,
+            'sender_amount' => $senderAmount,
+            'sender_currency' => $senderCurrency,
+            'recipient_amount' => $recipientAmount,
+            'recipient_currency' => $recipientCurrency,
+            'exchange_rate' => $exchangeRate,
             'payment_purpose' => $validated['paymentPurpose'] ?? null,
             'payment_code' => $validated['paymentCode'] ?? null,
             'transaction_time' => now(),
@@ -61,15 +71,18 @@ class TransactionController extends Controller
 
         return response()->json([
             'id' => $transaction->id,
-            'transactionType' => $transaction->transaction_type,
             'recipientAccount' => $transaction->recipient_account,
             'recipientName' => $transaction->recipient_name,
             'senderAccount' => $transaction->sender_account,
-            'senderName' => $transaction->sender_name,
             'model' => $transaction->model,
             'referenceNumber' => $transaction->reference_number,
             'amount' => $transaction->amount,
             'currency' => $transaction->currency,
+            'senderAmount' => $transaction->sender_amount,
+            'senderCurrency' => $transaction->sender_currency,
+            'recipientAmount' => $transaction->recipient_amount,
+            'recipientCurrency' => $transaction->recipient_currency,
+            'exchangeRate' => $transaction->exchange_rate,
             'paymentPurpose' => $transaction->payment_purpose,
             'paymentCode' => $transaction->payment_code,
             'transactionTime' => $transaction->transaction_time?->toISOString(),
@@ -97,15 +110,18 @@ class TransactionController extends Controller
             ->map(function (Transaction $transaction): array {
                 return [
                     'id' => $transaction->id,
-                    'transactionType' => $transaction->transaction_type,
                     'recipientAccount' => $transaction->recipient_account,
                     'recipientName' => $transaction->recipient_name,
                     'senderAccount' => $transaction->sender_account,
-                    'senderName' => $transaction->sender_name,
                     'model' => $transaction->model,
                     'referenceNumber' => $transaction->reference_number,
                     'amount' => $transaction->amount,
                     'currency' => $transaction->currency,
+                    'senderAmount' => $transaction->sender_amount,
+                    'senderCurrency' => $transaction->sender_currency,
+                    'recipientAmount' => $transaction->recipient_amount,
+                    'recipientCurrency' => $transaction->recipient_currency,
+                    'exchangeRate' => $transaction->exchange_rate,
                     'paymentPurpose' => $transaction->payment_purpose,
                     'paymentCode' => $transaction->payment_code,
                     'transactionTime' => $transaction->transaction_time?->toISOString(),

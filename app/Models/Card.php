@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Card extends Model
 {
     protected $fillable = [
+        'id',
         'account_id',
         'card_id',
         'card_type',

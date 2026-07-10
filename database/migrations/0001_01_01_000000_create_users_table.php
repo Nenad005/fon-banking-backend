@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('jmbg')->unique();
             $table->string('phone_number')->unique();
             $table->string('email')->unique();
-            $table->string('pin_hash')->nullable(); 
-            $table->enum('status', ['pending_activation', 'pending_pin', 'active', 'blocked'])->default('pending_activation');
+            $table->string('pin_hash')->nullable();
+            $table->enum('status', ['pending_activation', 'pending_pin', 'active', 'blocked', 'system'])->default('pending_activation');
             $table->timestamps();
         });
     }

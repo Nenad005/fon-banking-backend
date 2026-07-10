@@ -17,6 +17,11 @@ return new class extends Migration
             $table->string('reference_number')->nullable();
             $table->decimal('amount', 12, 2);
             $table->string('currency', 3);
+            $table->decimal('sender_amount', 12, 2)->nullable();
+            $table->string('sender_currency', 3)->nullable();
+            $table->decimal('recipient_amount', 12, 2)->nullable();
+            $table->string('recipient_currency', 3)->nullable();
+            $table->decimal('exchange_rate', 12, 6)->nullable();
             $table->string('payment_purpose')->nullable();
             $table->string('payment_code')->nullable();
             $table->timestamp('transaction_time')->nullable();

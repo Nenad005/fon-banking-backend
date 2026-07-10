@@ -14,7 +14,6 @@ return new class extends Migration
             $table->string('title');
             $table->string('name');
             $table->string('account_id')->unique();
-            $table->decimal('balance', 12, 2)->default(0);
             $table->string('color');
             $table->string('currency', 3);
             $table->timestamps();
