@@ -235,8 +235,28 @@ class DatabaseSeeder extends Seeder
                 'currency' => $template['currency'],
             ]);
 
+            $cardTemplates = [
+                [
+                    'card_type' => 'Master',
+                    'card_prefix' => '53554600',
+                ],
+                [
+                    'card_type' => 'Visa',
+                    'card_prefix' => '40003370',
+                ],
+            ];
+
             $this->seedOpeningBalance($account, $template, $systemAccounts['opening_balance'][$account->currency], $ledger);
-            $this->seedCardsForAccount($account, $user);
+            switch($account->currency){
+                case 'EUR':
+                    $this->seedCardsForAccount($account, $user, $cardTemplates[1]);
+                    break;
+                case 'RSD':
+                    $this->seedCardsForAccount($account, $user, $cardTemplates[0]);
+                    break;
+                default:
+                    return;
+            }
         }
     }
 
@@ -450,30 +470,17 @@ class DatabaseSeeder extends Seeder
         return $senderAmount;
     }
 
-    private function seedCardsForAccount(Account $account, User $user): void
+    private function seedCardsForAccount(Account $account, User $user, array $cardTemplate): void
     {
-        $cardTemplates = [
-            [
-                'card_type' => 'Master',
-                'card_prefix' => '53554600',
-            ],
-            [
-                'card_type' => 'Visa',
-                'card_prefix' => '40003370',
-            ],
-        ];
-
-        foreach ($cardTemplates as $template) {
-            $account->cards()->create([
-                'id' => (string) Str::uuid(),
-                'card_id' => $template['card_prefix'].$this->randomDigits(8),
-                'card_type' => $template['card_type'],
-                'expire_date' => $this->randomExpireDate(),
-                'owner_name' => trim($user->first_name.' '.$user->last_name),
-                'currency' => $account->currency,
-                'cvv' => $this->randomDigits(3),
-            ]);
-        }
+        $account->cards()->create([
+            'id' => (string) Str::uuid(),
+            'card_id' => $cardTemplate['card_prefix'].$this->randomDigits(8),
+            'card_type' => $cardTemplate['card_type'],
+            'expire_date' => $this->randomExpireDate(),
+            'owner_name' => trim($user->first_name.' '.$user->last_name),
+            'currency' => $account->currency,
+            'cvv' => $this->randomDigits(3),
+        ]);
     }
 
     private function randomOtherPerson(array $people, User $sender): User
