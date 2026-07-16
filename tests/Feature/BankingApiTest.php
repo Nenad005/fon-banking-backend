@@ -7,11 +7,53 @@ use App\Models\Card;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class BankingApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_authenticated_user_can_confirm_their_pin_without_creating_a_new_token(): void
+    {
+        $user = User::create([
+            'first_name' => 'Marko',
+            'last_name' => 'Nenadović',
+            'jmbg' => '0101990712345',
+            'phone_number' => '+381641111111',
+            'email' => 'marko.confirm@example.com',
+            'pin_hash' => Hash::make('1234'),
+            'status' => 'active',
+        ]);
+        $token = $user->createToken('test')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/auth/confirm-pin', ['pin' => '1234']);
+
+        $response->assertOk()
+            ->assertJsonPath('status', 'success');
+        $this->assertCount(1, $user->tokens()->get());
+    }
+
+    public function test_pin_confirmation_rejects_an_incorrect_pin(): void
+    {
+        $user = User::create([
+            'first_name' => 'Jovana',
+            'last_name' => 'Jovanović',
+            'jmbg' => '0202990712345',
+            'phone_number' => '+381642222222',
+            'email' => 'jovana.confirm@example.com',
+            'pin_hash' => Hash::make('1234'),
+            'status' => 'active',
+        ]);
+        $token = $user->createToken('test')->plainTextToken;
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/auth/confirm-pin', ['pin' => '9999']);
+
+        $response->assertUnauthorized()
+            ->assertJsonPath('message', 'Pogrešan PIN kod.');
+    }
 
     public function test_accounts_endpoint_returns_authenticated_users_accounts(): void
     {

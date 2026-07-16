@@ -160,6 +160,25 @@ class AuthController extends Controller
         ], 200);
     }
 
+    public function confirmPin(Request $request)
+    {
+        $validated = $request->validate([
+            'pin' => 'required|digits:4',
+        ]);
+
+        if (!Hash::check($validated['pin'], $request->user()->pin_hash)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Pogrešan PIN kod.',
+            ], 401);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Identitet je potvrđen.',
+        ]);
+    }
+
     public function logout(Request $request)
     {   
         $token = $request->user()?->currentAccessToken();

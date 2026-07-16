@@ -11,6 +11,7 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function (): void {
     Route::get('/accounts/{accountId}/cards', [CardController::class, 'index']);
     Route::post('/transactions/transfer', [TransactionController::class, 'store']);
     Route::get('/accounts/{accountId}/transactions', [TransactionController::class, 'index']);
+    Route::post('/auth/confirm-pin', [AuthController::class, 'confirmPin']);
     Route::post('/logout', [AuthController::class, 'logout']);
 });
 
