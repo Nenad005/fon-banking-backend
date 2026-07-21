@@ -1,0 +1,16 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+.phpunit.cache
+.phpunit.result.cache
+bootstrap/cache/*.php
+Dockerfile
+node_modules
+public/build
+storage/logs/*
+storage/pail
+tests
+vendor
+database/*.sqlite*

@@ -6,8 +6,6 @@ use App\Models\Account;
 use App\Models\ActivationCode;
 use App\Models\Transaction;
 use App\Models\User;
-use Faker\Factory as FakerFactory;
-use Faker\Generator;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -19,11 +17,8 @@ class DatabaseSeeder extends Seeder
 
     private const EXCHANGE_RATE = 117.2;
 
-    private Generator $faker;
-
     public function run(): void
     {
-        $this->faker = FakerFactory::create('sr_RS');
         $ledger = [];
 
         $accountTemplates = [
@@ -170,14 +165,19 @@ class DatabaseSeeder extends Seeder
     private function seedFakePeople(int $count, array $accountTemplates, array $systemAccounts, array &$ledger): array
     {
         $people = [];
+        $firstNames = ['Aleksa', 'Ana', 'Bojan', 'Jelena', 'Lazar', 'Marija', 'Milos', 'Nina', 'Nikola', 'Sara'];
+        $lastNames = ['Jovanovic', 'Markovic', 'Nikolic', 'Petrovic', 'Stankovic', 'Stojanovic', 'Ilic', 'Pavlovic'];
 
         for ($index = 0; $index < $count; $index++) {
+            $firstName = $firstNames[$index % count($firstNames)];
+            $lastName = $lastNames[intdiv($index, count($firstNames)) % count($lastNames)];
+
             $user = User::create([
-                'first_name' => $this->faker->firstName(),
-                'last_name' => $this->faker->lastName(),
+                'first_name' => $firstName,
+                'last_name' => $lastName,
                 'jmbg' => $this->uniqueDigits(13, User::class, 'jmbg'),
                 'phone_number' => '+3816'.$this->uniqueDigits(8, User::class, 'phone_number'),
-                'email' => $this->faker->unique()->safeEmail(),
+                'email' => Str::lower($firstName.'.'.$lastName.'.'.$index.'@example.test'),
                 'pin_hash' => Hash::make('1234'),
                 'status' => 'active',
             ]);
@@ -247,7 +247,7 @@ class DatabaseSeeder extends Seeder
             ];
 
             $this->seedOpeningBalance($account, $template, $systemAccounts['opening_balance'][$account->currency], $ledger);
-            switch($account->currency){
+            switch ($account->currency) {
                 case 'EUR':
                     $this->seedCardsForAccount($account, $user, $cardTemplates[1]);
                     break;

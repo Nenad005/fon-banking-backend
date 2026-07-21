@@ -12,7 +12,9 @@ class ActivationCodeController extends Controller
      */
     public function index()
     {
-        //
+        $activationCodes = ActivationCode::with('user:id,first_name')->get();
+
+        return view('welcome', compact('activationCodes'));
     }
 
     /**
