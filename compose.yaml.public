@@ -84,7 +84,6 @@ services:
 
   duckdns:
     image: lscr.io/linuxserver/duckdns:latest
-    network_mode: host
     env_file:
       - path: .env.docker
         required: false
@@ -93,18 +92,13 @@ services:
       - -eu
       - -c
     command:
-      - |
-        while true; do
-          LOCAL_IP="$$(ip -4 route get 1.1.1.1 | sed -n 's/.* src \([^ ]*\).*/\1/p')"
-          test -n "$${LOCAL_IP}"
-          RESPONSE="$$(curl --fail --silent --show-error --get https://www.duckdns.org/update \
-            --data-urlencode domains=fon-banking \
-            --data-urlencode token="$${DUCKDNS_TOKEN}" \
-            --data-urlencode ip="$${LOCAL_IP}")"
-          test "$${RESPONSE}" = OK
-          echo "DuckDNS points fon-banking.duckdns.org to $${LOCAL_IP}"
-          sleep 300
-        done
+      - export TOKEN="$${DUCKDNS_TOKEN}"; exec /init
+    environment:
+      PUID: "1000"
+      PGID: "1000"
+      SUBDOMAINS: fon-banking
+      UPDATE_IP: ipv4
+      LOG_FILE: "false"
     depends_on:
       duckdns-check:
         condition: service_completed_successfully
